@@ -25,7 +25,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
         {/* Animated Brand Logo */}
         <div className="relative mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-emerald-500 shadow-xl shadow-emerald-500/20">
           <MessageSquare id="logo-chat-icon" className="h-12 w-12 text-white" />
-          <motion.div
+          <motion.div 
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.5 }}
@@ -68,7 +68,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
 
       {/* Footer credits */}
       <div className="absolute bottom-6 font-mono text-[10px] text-slate-500 tracking-wider">
-        {new Date().getFullYear()} CHATTA INC | All rights Reserved
+        {new Date().getFullYear()} CHATTA | All rights Reserved
       </div>
     </div>
   );

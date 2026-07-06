@@ -37,7 +37,17 @@ export default function PlanModal({ user, onClose, onUpdateUser }: PlanModalProp
     }, 1500);
   };
 
-  const handleSelectPlan = (plan: 'silver' | 'gold' | 'premium', amountNaira: number) => {
+  const handleSelectPlan = (plan: 'free' | 'silver' | 'gold' | 'premium', amountNaira: number) => {
+    if (plan === 'free') {
+      const updated: User = {
+        ...user,
+        subscriptionPlan: 'free',
+      };
+      onUpdateUser(updated);
+      alert("🎉 Plan downgraded to Free. You can upgrade again at any time!");
+      return;
+    }
+
     // If outside Africa, must download LemFi first
     if (isOutsideAfrica && !lemfiDownloaded) {
       alert("Please download the LemFi app to convert your local currency to Naira before completing payment.");
@@ -86,6 +96,21 @@ export default function PlanModal({ user, onClose, onUpdateUser }: PlanModalProp
 
   const plans = [
     {
+      id: 'free' as const,
+      name: 'Free Plan',
+      price: 0,
+      description: 'Standard secure chat and media sharing capabilities.',
+      features: [
+        'Secure client-side E2EE Chat',
+        'Image and attachment support',
+        'Private keypair configuration',
+        'Standard Encrypted Backups',
+      ],
+      color: 'border-slate-200 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-950/5',
+      badgeColor: 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400',
+      btnColor: 'bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300',
+    },
+    {
       id: 'silver' as const,
       name: 'Silver Plan',
       price: 2000,
@@ -108,9 +133,9 @@ export default function PlanModal({ user, onClose, onUpdateUser }: PlanModalProp
       features: [
         'All Silver Plan benefits',
         'Secure Ultra-HD Video Calling',
-        'Zero-knowledge chat transcript exports',
-        'Up to 10-member group video conferencing',
-        'Priority technical support responses',
+        'Zero-knowledge transcript exports',
+        'Up to 10-member group conferencing',
+        'Priority technical support response',
       ],
       color: 'border-amber-400/50 dark:border-amber-500/50 bg-amber-50/20 dark:bg-amber-950/10 ring-2 ring-amber-400/20',
       badgeColor: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-400',
@@ -248,9 +273,9 @@ export default function PlanModal({ user, onClose, onUpdateUser }: PlanModalProp
         </div>
 
         {/* Pricing Cards Container */}
-        <div className="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-3 gap-5 pr-1 py-2 scrollbar-thin">
+        <div className="flex-1 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 pr-1 py-2 scrollbar-thin">
           {plans.map((p) => {
-            const isCurrentPlan = user.subscriptionPlan === p.id;
+            const isCurrentPlan = (user.subscriptionPlan || 'free') === p.id;
             return (
               <div
                 key={p.id}
@@ -298,6 +323,8 @@ export default function PlanModal({ user, onClose, onUpdateUser }: PlanModalProp
                 >
                   {isCurrentPlan ? (
                     'Your Current Plan'
+                  ) : p.id === 'free' ? (
+                    'Downgrade to Free'
                   ) : isLoadingPaystack ? (
                     'Processing...'
                   ) : isOutsideAfrica && !lemfiDownloaded ? (

@@ -32,6 +32,7 @@ export default function ProfileSettings({
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'settings'>('profile');
 
   // User Profile States
+  const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl || '');
   const [displayName, setDisplayName] = useState(user.displayName);
   const [bio, setBio] = useState(user.bio);
   const [status, setStatus] = useState<UserType['status']>(user.status);
@@ -109,6 +110,7 @@ export default function ProfileSettings({
   const handleSaveProfile = () => {
     onUpdateUser({
       ...user,
+      avatarUrl,
       displayName,
       bio,
       status,
@@ -297,6 +299,54 @@ export default function ProfileSettings({
               <div className="flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-wider text-emerald-500">
                 <Sparkles className="h-4 w-4" />
                 <span>Personal Identity Fields</span>
+              </div>
+
+              {/* Profile Image Uploader */}
+              <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
+                <div className="relative group shrink-0">
+                  <img
+                    src={avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}
+                    alt="Profile Avatar"
+                    className="h-20 w-20 rounded-full object-cover border-2 border-emerald-500 shadow-md"
+                  />
+                  <label
+                    htmlFor="avatar-upload-input"
+                    className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white text-[10px] font-bold"
+                  >
+                    <Upload className="h-4 w-4 mr-1" />
+                    Upload
+                  </label>
+                  <input
+                    id="avatar-upload-input"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setAvatarUrl(reader.result as string);
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="hidden"
+                  />
+                </div>
+                <div className="text-center sm:text-left">
+                  <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100">Profile Picture</h4>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 max-w-sm">
+                    Upload an image file (JPG, PNG, WebP) to update your personal visual representation across E2EE chats.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => document.getElementById('avatar-upload-input')?.click()}
+                    className="mt-2.5 inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-500 hover:bg-emerald-600 text-white px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+                  >
+                    <Upload className="h-3 w-3" />
+                    <span>Choose File</span>
+                  </button>
+                </div>
               </div>
 
               {/* Status indicator (browser decided) */}

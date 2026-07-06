@@ -20,7 +20,9 @@ import {
   onSnapshot,
   orderBy,
   limit,
-  Timestamp
+  Timestamp,
+  deleteDoc,
+  updateDoc
 } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -51,5 +53,7 @@ export {
   onSnapshot,
   orderBy,
   limit,
-  Timestamp 
+  Timestamp,
+  deleteDoc,
+  updateDoc
 };

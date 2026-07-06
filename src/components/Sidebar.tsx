@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import {
-  Search, Users, MessageSquarePlus, Settings, Database, Moon, Sun,
+import { 
+  Search, Users, MessageSquarePlus, Settings, Database, Moon, Sun, 
   Wifi, WifiOff, Globe, ShieldCheck, HelpCircle, ArrowRightLeft, UserCheck, UserPlus, X, Loader2,
   MoreVertical, LogOut, Sparkles
 } from 'lucide-react';
@@ -43,7 +43,7 @@ export default function Sidebar({
 }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'chats' | 'groups'>('chats');
-
+  
   // Add Contact Form states
   const [showAddContact, setShowAddContact] = useState(false);
   const [contactEmail, setContactEmail] = useState('');
@@ -95,7 +95,7 @@ export default function Sidebar({
 
   return (
     <div className="flex h-full w-full flex-col bg-white text-slate-800 dark:bg-slate-900 dark:text-slate-100 border-r border-slate-200 dark:border-slate-800 transition-colors">
-
+      
       {/* Top Profile Header */}
       <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-800/80">
         <div className="flex items-center gap-3">
@@ -120,11 +120,12 @@ export default function Sidebar({
               {user.email}
             </div>
             <div className="mt-0.5">
-              <span className={`inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[8px] font-extrabold uppercase ${user.subscriptionPlan === 'silver' ? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-300/30' :
+              <span className={`inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[8px] font-extrabold uppercase ${
+                user.subscriptionPlan === 'silver' ? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-300/30' :
                 user.subscriptionPlan === 'gold' ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400 border border-amber-300/30' :
-                  user.subscriptionPlan === 'premium' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400 border border-emerald-300/30' :
-                    'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
-                }`}>
+                user.subscriptionPlan === 'premium' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400 border border-emerald-300/30' :
+                'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+              }`}>
                 {user.subscriptionPlan ? user.subscriptionPlan.toUpperCase() : 'FREE'} PLAN
               </span>
             </div>
@@ -145,11 +146,11 @@ export default function Sidebar({
           {showMenu && (
             <>
               {/* Dropdown Backdrop overlay to dismiss on external click */}
-              <div
-                className="fixed inset-0 z-10 cursor-default"
+              <div 
+                className="fixed inset-0 z-10 cursor-default" 
                 onClick={() => setShowMenu(false)}
               />
-
+              
               <div className="absolute right-0 mt-2 w-56 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl z-25 overflow-hidden animate-fadeIn py-1">
                 {/* Upgrade / Pricing Plans */}
                 <button
@@ -261,7 +262,7 @@ export default function Sidebar({
                 <X className="h-3.5 w-3.5" />
               </button>
             </div>
-
+            
             <div className="flex gap-1.5">
               <input
                 id="add-contact-email-input"
@@ -338,7 +339,12 @@ export default function Sidebar({
               let connectionSubtitle = contact.bio;
               let subtitleColorClass = 'text-slate-500 dark:text-slate-400';
 
-              if (contact.connectionStatus === 'pending') {
+              const isBlocked = user.blockedUsers?.includes(contact.id);
+
+              if (isBlocked) {
+                connectionSubtitle = 'Blocked User';
+                subtitleColorClass = 'text-rose-500 dark:text-rose-400 font-semibold';
+              } else if (contact.connectionStatus === 'pending') {
                 if (contact.connectionRequesterId === user.uid) {
                   connectionSubtitle = 'Pending Approval';
                   subtitleColorClass = 'text-amber-500 dark:text-amber-400 font-semibold';
@@ -366,7 +372,7 @@ export default function Sidebar({
                     />
                     <span className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white dark:border-slate-900 ${contact.status === 'online' ? 'bg-emerald-500' : contact.status === 'away' ? 'bg-amber-400' : 'bg-slate-400'}`} />
                   </div>
-
+                  
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold truncate text-slate-900 dark:text-white">
@@ -408,7 +414,7 @@ export default function Sidebar({
                 <span>Create Group</span>
               </button>
             </div>
-
+            
             <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/40">
               {filteredGroups.length > 0 ? (
                 filteredGroups.map(group => {
@@ -426,7 +432,7 @@ export default function Sidebar({
                         alt={group.name}
                         className="h-11 w-11 rounded-full object-cover shrink-0"
                       />
-
+                      
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-bold truncate text-slate-900 dark:text-white">
@@ -462,7 +468,7 @@ export default function Sidebar({
       {/* App brand footer */}
       <div className="p-3 text-center border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/20">
         <span className="font-mono text-[9px] text-slate-400 dark:text-slate-500 tracking-wider">
-          {new Date().getFullYear()} CHATTA INC | All rights Reserved
+          Copywrite {new Date().getFullYear()} @Chatta
         </span>
       </div>
     </div>

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   Send, Image, Mic, Square, Trash2, Shield, Play, Pause, 
   Check, CheckCheck, Lock, Unlock, Key, FileCode, Radio, Info, ChevronLeft,
-  Phone, Video
+  Phone, Video, MoreVertical, UserMinus, Ban, UserPlus, Plus, X
 } from 'lucide-react';
 import { Contact, Group, Message, User } from '../types';
 
@@ -19,6 +19,12 @@ interface ChatRoomProps {
   onAcceptConnection?: (connectionId: string) => void;
   onDenyConnection?: (connectionId: string) => void;
   onStartCall: (isVideo: boolean) => void;
+  contacts: Contact[];
+  onAddGroupMember: (groupId: string, contactId: string) => Promise<void>;
+  onBlockUser: (userIdToBlock: string) => Promise<void>;
+  onUnblockUser: (userIdToUnblock: string) => Promise<void>;
+  onDeleteContact: (contactId: string) => Promise<void>;
+  onDeleteChat: (chatId: string, isGroup: boolean) => Promise<void>;
 }
 
 export default function ChatRoom({
@@ -34,11 +40,25 @@ export default function ChatRoom({
   onAcceptConnection,
   onDenyConnection,
   onStartCall,
+  contacts,
+  onAddGroupMember,
+  onBlockUser,
+  onUnblockUser,
+  onDeleteContact,
+  onDeleteChat,
 }: ChatRoomProps) {
   const [inputText, setInputText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [showMenu, setShowMenu] = useState(false);
+  const [showAddMemberModal, setShowAddMemberModal] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<{
+    type: 'block' | 'unblock' | 'deleteContact' | 'deleteChat';
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  } | null>(null);
 
   // Connection details
   const contact = !isGroup && activeChat ? (activeChat as Contact) : null;
@@ -46,6 +66,7 @@ export default function ChatRoom({
   const isDenied = contact?.connectionStatus === 'denied';
   const isRequester = contact?.connectionRequesterId === user.uid;
   const connectionId = contact?.connectionId;
+  const isBlockedByMe = !isGroup && activeChat ? !!user.blockedUsers?.includes(activeChat.id) : false;
 
   // Audio recording references
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -285,12 +306,109 @@ export default function ChatRoom({
           <button
             id="open-crypto-logs-button"
             onClick={onOpenCryptoLogs}
-            className="flex items-center gap-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1.5 sm:px-3 font-mono text-[10px] font-bold text-emerald-500 hover:bg-emerald-500/20 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1.5 sm:px-3 font-mono text-[10px] font-bold text-emerald-500 hover:bg-emerald-500/20 transition-all cursor-pointer shrink-0"
             title="Verify encryption keys and connection security logs"
           >
             <Key className="h-3.5 w-3.5" />
             <span className="hidden md:inline">SECURITY DETAILS</span>
           </button>
+
+          {/* Options Dropdown */}
+          <div className="relative">
+            <button
+              id="chat-options-menu-btn"
+              onClick={() => setShowMenu(!showMenu)}
+              className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-emerald-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-emerald-400 transition-colors cursor-pointer shrink-0"
+              title="Chat Options"
+            >
+              <MoreVertical className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
+            </button>
+
+            {showMenu && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
+                <div className="absolute right-0 mt-2 w-52 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-1.5 shadow-xl z-20 animate-fadeIn">
+                  {isGroup ? (
+                    <button
+                      id="group-add-member-opt"
+                      onClick={() => {
+                        setShowMenu(false);
+                        setShowAddMemberModal(true);
+                      }}
+                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+                    >
+                      <UserPlus className="h-4 w-4 text-emerald-500" />
+                      <span>Add Member to Group</span>
+                    </button>
+                  ) : activeChat ? (
+                    <>
+                      <button
+                        id="contact-block-opt"
+                        onClick={() => {
+                          setShowMenu(false);
+                          if (isBlockedByMe) {
+                            setConfirmAction({
+                              type: 'unblock',
+                              title: 'Unblock Contact',
+                              message: `Are you sure you want to unblock ${activeChat.name}? This will restore security handshakes and communication channels.`,
+                              onConfirm: () => onUnblockUser(activeChat.id)
+                            });
+                          } else {
+                            setConfirmAction({
+                              type: 'block',
+                              title: 'Block Contact',
+                              message: `Are you sure you want to block ${activeChat.name}? They will not be able to send you E2EE handshake requests or messages.`,
+                              onConfirm: () => onBlockUser(activeChat.id)
+                            });
+                          }
+                        }}
+                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer"
+                      >
+                        <Ban className="h-4 w-4" />
+                        <span>{isBlockedByMe ? 'Unblock User' : 'Block User'}</span>
+                      </button>
+
+                      <button
+                        id="contact-delete-opt"
+                        onClick={() => {
+                          setShowMenu(false);
+                          setConfirmAction({
+                            type: 'deleteContact',
+                            title: 'Delete Contact Connection',
+                            message: `Are you sure you want to completely delete ${activeChat.name} from your contacts? This removes your cryptographic peer linkage.`,
+                            onConfirm: () => onDeleteContact(activeChat.id)
+                          });
+                        }}
+                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer"
+                      >
+                        <UserMinus className="h-4 w-4" />
+                        <span>Delete Contact</span>
+                      </button>
+                    </>
+                  ) : null}
+
+                  {activeChat && (
+                    <button
+                      id="chat-delete-history-opt"
+                      onClick={() => {
+                        setShowMenu(false);
+                        setConfirmAction({
+                          type: 'deleteChat',
+                          title: 'Delete Chat History',
+                          message: `Are you sure you want to delete all decrypted messages in this chat session? This action is immediate and non-reversible.`,
+                          onConfirm: () => onDeleteChat(activeChat.id, isGroup)
+                        });
+                      }}
+                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 border-t border-slate-100 dark:border-slate-800/80 mt-1 pt-2 cursor-pointer"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span>Delete Chat History</span>
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -516,6 +634,15 @@ export default function ChatRoom({
               This secure connection request has been declined or cancelled.
             </p>
           </div>
+        ) : isBlockedByMe ? (
+          /* BLOCKED USER NOTICE */
+          <div className="flex flex-col items-center justify-center py-4 text-center text-xs text-rose-500 dark:text-rose-400 font-semibold bg-rose-500/5 rounded-xl border border-dashed border-rose-500/20 p-4 w-full">
+            <Ban className="h-5 w-5 mb-1 text-rose-500 animate-pulse" />
+            <span>This Contact is Blocked</span>
+            <p className="mt-1 text-[10px] text-slate-500 dark:text-slate-400 max-w-xs font-normal">
+              You have blocked this contact. Unblock them from the options menu to resume secure E2EE chat.
+            </p>
+          </div>
         ) : isRecording ? (
           /* VOICE RECORDING PANEL ACTIVE */
           <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-950 rounded-xl px-4 py-2 border border-slate-200 dark:border-slate-800 animate-pulse">
@@ -593,6 +720,110 @@ export default function ChatRoom({
           </div>
         )}
       </div>
+
+      {/* Custom Add Group Member Modal */}
+      {showAddMemberModal && isGroup && activeChat && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 text-slate-100 backdrop-blur-xs">
+          <div className="relative w-full max-w-sm rounded-2xl border border-slate-200 dark:border-slate-800 bg-white text-slate-800 dark:bg-slate-900 dark:text-slate-100 p-5 shadow-2xl flex flex-col max-h-[80vh] animate-scaleUp">
+            
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-3.5">
+              <div className="flex items-center gap-2">
+                <UserPlus className="h-4.5 w-4.5 text-emerald-500" />
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">Add Group Member</h3>
+              </div>
+              <button
+                onClick={() => setShowAddMemberModal(false)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* List */}
+            <div className="flex-1 overflow-y-auto min-h-[200px] max-h-[350px] space-y-2.5 pr-1 scrollbar-thin">
+              {contacts.filter(c => !((activeChat as Group).members || []).includes(c.id)).length > 0 ? (
+                contacts.filter(c => !((activeChat as Group).members || []).includes(c.id)).map(c => (
+                  <div key={c.id} className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-slate-800/40">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <img
+                        src={c.avatarUrl}
+                        alt={c.name}
+                        className="h-8 w-8 rounded-full object-cover shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">{c.name}</h4>
+                        <p className="text-[10px] text-slate-400 truncate">{c.email}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        await onAddGroupMember(activeChat.id, c.id);
+                      }}
+                      className="inline-flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      <span>Add</span>
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8 text-center text-slate-400">
+                  <Info className="h-5 w-5 mb-1.5 text-slate-400" />
+                  <span>No eligible contacts found</span>
+                  <p className="mt-0.5 text-[10px] text-slate-500 max-w-xs font-normal">
+                    All of your active contacts are already members of this secure E2EE group.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="mt-4 border-t border-slate-100 dark:border-slate-800 pt-3">
+              <button
+                type="button"
+                onClick={() => setShowAddMemberModal(false)}
+                className="w-full rounded-xl bg-slate-100 dark:bg-slate-800 py-2.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Confirmation Modal */}
+      {confirmAction && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 text-slate-100 backdrop-blur-xs">
+          <div className="relative w-full max-w-sm rounded-2xl border border-slate-200 dark:border-slate-800 bg-white text-slate-800 dark:bg-slate-900 dark:text-slate-100 p-5 shadow-2xl animate-scaleUp">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-2 uppercase tracking-wider font-mono text-rose-500">
+              {confirmAction.title}
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
+              {confirmAction.message}
+            </p>
+            <div className="flex gap-2.5">
+              <button
+                type="button"
+                onClick={() => setConfirmAction(null)}
+                className="flex-1 rounded-xl bg-slate-100 dark:bg-slate-800 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  confirmAction.onConfirm();
+                  setConfirmAction(null);
+                }}
+                className="flex-1 rounded-xl bg-rose-500 hover:bg-rose-600 py-2 text-xs font-bold text-white shadow-md shadow-rose-500/15 transition-colors cursor-pointer"
+              >
+                Confirm Action
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -28,7 +28,9 @@ import {
   addDoc, 
   query, 
   where, 
-  onSnapshot 
+  onSnapshot,
+  deleteDoc,
+  updateDoc
 } from './utils/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 
@@ -532,6 +534,108 @@ export default function App() {
     }
   };
 
+  // Block user handler
+  const handleBlockUser = async (userIdToBlock: string) => {
+    if (!user) return;
+    const blocked = user.blockedUsers || [];
+    if (blocked.includes(userIdToBlock)) return;
+    const updated: User = {
+      ...user,
+      blockedUsers: [...blocked, userIdToBlock]
+    };
+    setUser(updated);
+    localStorage.setItem('chatta_cached_user', JSON.stringify(updated));
+    try {
+      await setDoc(doc(db, 'users', user.uid), updated);
+    } catch (err) {
+      console.error('Failed to update blocked users:', err);
+    }
+  };
+
+  // Unblock user handler
+  const handleUnblockUser = async (userIdToUnblock: string) => {
+    if (!user) return;
+    const blocked = user.blockedUsers || [];
+    if (!blocked.includes(userIdToUnblock)) return;
+    const updated: User = {
+      ...user,
+      blockedUsers: blocked.filter(id => id !== userIdToUnblock)
+    };
+    setUser(updated);
+    localStorage.setItem('chatta_cached_user', JSON.stringify(updated));
+    try {
+      await setDoc(doc(db, 'users', user.uid), updated);
+    } catch (err) {
+      console.error('Failed to unblock user:', err);
+    }
+  };
+
+  // Delete Contact connection handler
+  const handleDeleteContact = async (contactId: string) => {
+    if (!user) return;
+    const conn = connections.find(c => (c.user1 === user.uid && c.user2 === contactId) || (c.user2 === user.uid && c.user1 === contactId));
+    if (conn) {
+      try {
+        await deleteDoc(doc(db, 'connections', conn.id));
+        setActiveChatId(null);
+      } catch (err) {
+        console.error('Failed to delete connection doc:', err);
+      }
+    }
+  };
+
+  // Delete entire conversation chat history
+  const handleDeleteChat = async (chatId: string, isGroup: boolean) => {
+    if (!user) return;
+    const chatMsgs = messages.filter(m => 
+      isGroup 
+        ? (m.isGroup && m.receiverId === chatId)
+        : ((m.senderId === user.uid && m.receiverId === chatId) || (m.senderId === chatId && m.receiverId === user.uid))
+    );
+    try {
+      const promises = chatMsgs.map(m => deleteDoc(doc(db, 'messages', m.id)));
+      await Promise.all(promises);
+    } catch (err) {
+      console.error('Failed to delete chat messages:', err);
+    }
+  };
+
+  // Add more members to existing group
+  const handleAddGroupMember = async (groupId: string, contactId: string) => {
+    try {
+      const groupRef = doc(db, 'groups', groupId);
+      const group = groups.find(g => g.id === groupId);
+      if (!group) return;
+      
+      const currentMembers = group.members || [];
+      if (currentMembers.includes(contactId)) {
+        alert("This contact is already a member of this group.");
+        return;
+      }
+      
+      const updatedMembers = [...currentMembers, contactId];
+      await updateDoc(groupRef, { members: updatedMembers });
+      
+      // Post system announcement message to the group
+      const partner = contacts.find(c => c.id === contactId);
+      const addedName = partner ? partner.name : 'A secure member';
+      await addDoc(collection(db, 'messages'), {
+        senderId: 'contact_alice',
+        receiverId: groupId,
+        isGroup: true,
+        ciphertext: encryptMessage(`${addedName} has been added to this secure group.`, 'shared_group_key'),
+        type: 'text',
+        timestamp: new Date().toISOString(),
+        status: 'read',
+        encrypted: true,
+        algorithm: 'AES-256-CBC',
+      });
+    } catch (err) {
+      console.error('Failed to add member to group:', err);
+      alert('Could not add member to the group.');
+    }
+  };
+
   // Restore backup
   const handleImportBackup = (backup: ChatBackup) => {
     if (backup.messages) {
@@ -726,6 +830,12 @@ export default function App() {
             onAcceptConnection={handleAcceptConnection}
             onDenyConnection={handleDenyConnection}
             onStartCall={handleStartCall}
+            contacts={contacts}
+            onAddGroupMember={handleAddGroupMember}
+            onBlockUser={handleBlockUser}
+            onUnblockUser={handleUnblockUser}
+            onDeleteContact={handleDeleteContact}
+            onDeleteChat={handleDeleteChat}
           />
         </div>
       </div>

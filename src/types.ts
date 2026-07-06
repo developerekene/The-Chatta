@@ -20,6 +20,7 @@ export interface User {
   gender?: string;
   language?: string;
   subscriptionPlan?: 'free' | 'silver' | 'gold' | 'premium';
+  blockedUsers?: string[];
 }
 
 export const PAYSTACK_TEST_KEY = "pk_test_db0145199289f83c428d57cf70755142bb0b8b28";

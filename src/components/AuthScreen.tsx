@@ -3,21 +3,21 @@ import { ShieldAlert, ShieldCheck, Mail, Lock, ChevronRight, Copy, Check, Info, 
 import { generateMnemonic, generateKeyPair } from '../utils/crypto';
 import { User } from '../types';
 import { motion } from 'motion/react';
-import {
-  auth,
-  db,
+import { 
+  auth, 
+  db, 
   googleProvider,
-  doc,
-  setDoc,
+  doc, 
+  setDoc, 
   getDoc,
   collection,
   getDocs,
   query,
   where
 } from '../utils/firebase';
-import {
-  signInWithPopup,
-  signInWithEmailAndPassword,
+import { 
+  signInWithPopup, 
+  signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
   updateProfile
 } from 'firebase/auth';
@@ -58,11 +58,11 @@ export default function AuthScreen({ onLoginSuccess, savedUserForPin, onPinUnloc
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const fUser = result.user;
-
+      
       // Check if user already exists in Firestore database
       const userRef = doc(db, 'users', fUser.uid);
       const userDoc = await getDoc(userRef);
-
+      
       if (userDoc.exists()) {
         // Old user returning. Load keys and login!
         const existingUser = userDoc.data() as User;
@@ -71,7 +71,7 @@ export default function AuthScreen({ onLoginSuccess, savedUserForPin, onPinUnloc
         // New signup. Proceed to PIN creation!
         const keys = generateKeyPair();
         const recoveryMnemonic = generateMnemonic();
-
+        
         const newUser: User = {
           uid: fUser.uid,
           displayName: fUser.displayName || fUser.email?.split('@')[0].toUpperCase() || 'CHATTA USER',
@@ -104,7 +104,7 @@ export default function AuthScreen({ onLoginSuccess, savedUserForPin, onPinUnloc
     const mockEmail = email.trim() || 'developer@gmail.com';
     const keys = generateKeyPair();
     const recoveryMnemonic = generateMnemonic();
-
+    
     const newUser: User = {
       uid: 'sandbox_user_' + Math.random().toString(36).substr(2, 9),
       displayName: mockEmail.split('@')[0].toUpperCase(),
@@ -116,7 +116,7 @@ export default function AuthScreen({ onLoginSuccess, savedUserForPin, onPinUnloc
       publicKey: keys.publicKey,
       privateKey: keys.privateKey,
     };
-
+    
     setGeneratedUser(newUser);
     setStep('pin_setup');
   };
@@ -143,11 +143,11 @@ export default function AuthScreen({ onLoginSuccess, savedUserForPin, onPinUnloc
         // Create user
         const result = await createUserWithEmailAndPassword(auth, email, password);
         const fUser = result.user;
-
+        
         // Setup initial E2E parameters
         const keys = generateKeyPair();
         const recoveryMnemonic = generateMnemonic();
-
+        
         const newUser: User = {
           uid: fUser.uid,
           displayName: email.split('@')[0].toUpperCase(),
@@ -165,11 +165,11 @@ export default function AuthScreen({ onLoginSuccess, savedUserForPin, onPinUnloc
         // Sign in
         const result = await signInWithEmailAndPassword(auth, email, password);
         const fUser = result.user;
-
+        
         // Fetch keys from firestore
         const userRef = doc(db, 'users', fUser.uid);
         const userDoc = await getDoc(userRef);
-
+        
         if (userDoc.exists()) {
           onLoginSuccess(userDoc.data() as User);
         } else {
@@ -226,7 +226,7 @@ export default function AuthScreen({ onLoginSuccess, savedUserForPin, onPinUnloc
 
     setTimeout(async () => {
       if (!generatedUser) return;
-
+      
       const finalUser: User = {
         ...generatedUser,
         pinCode: pin,
@@ -236,7 +236,7 @@ export default function AuthScreen({ onLoginSuccess, savedUserForPin, onPinUnloc
         // Save user record to firestore live
         const userRef = doc(db, 'users', finalUser.uid);
         await setDoc(userRef, finalUser);
-
+        
         setGeneratedUser(finalUser);
         setProgressLog(prev => [...prev, 'Database secure profile synchronized.']);
         setStep('recovery');
@@ -306,7 +306,7 @@ export default function AuthScreen({ onLoginSuccess, savedUserForPin, onPinUnloc
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-950 p-4 text-slate-100">
       <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/90 p-8 shadow-2xl shadow-emerald-500/5 backdrop-blur-md">
-
+        
         {/* Glow decorative spheres */}
         <div className="absolute -top-24 -left-24 h-48 w-48 rounded-full bg-emerald-500/10 blur-3xl"></div>
         <div className="absolute -bottom-24 -right-24 h-48 w-48 rounded-full bg-emerald-500/10 blur-3xl"></div>
@@ -338,7 +338,7 @@ export default function AuthScreen({ onLoginSuccess, savedUserForPin, onPinUnloc
               {isSignUp ? 'Create Your Chat Account' : 'Log In to Your Chat Account'}
             </h2>
             <p className="mt-1.5 text-xs text-slate-400">
-              {isSignUp
+              {isSignUp 
                 ? 'Create a highly secure, private chat account connected to your Google or email address.'
                 : 'Sign in to access your secure chat workspace.'}
             </p>
@@ -364,7 +364,7 @@ export default function AuthScreen({ onLoginSuccess, savedUserForPin, onPinUnloc
 
               <div>
                 <label className="block font-mono text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
-                  Password
+                  Secret Key Phrase (Password)
                 </label>
                 <div className="relative">
                   <Lock className="absolute top-2.5 left-3 h-4.5 w-4.5 text-slate-500" />
@@ -421,14 +421,14 @@ export default function AuthScreen({ onLoginSuccess, savedUserForPin, onPinUnloc
                 Authenticate with Google
               </button>
 
-              {/* <div className="relative flex py-1 items-center">
+              <div className="relative flex py-1 items-center">
                 <div className="flex-grow border-t border-slate-800"></div>
                 <span className="flex-shrink mx-3 text-[9px] font-mono text-slate-500 uppercase tracking-wider">PREVIEW OPTIONS</span>
                 <div className="flex-grow border-t border-slate-800"></div>
-              </div> */}
+              </div>
 
               {/* Sandbox Bypass Mode */}
-              {/* <button
+              <button
                 id="sandbox-bypass-button"
                 type="button"
                 onClick={handleSandboxBypass}
@@ -436,7 +436,7 @@ export default function AuthScreen({ onLoginSuccess, savedUserForPin, onPinUnloc
               >
                 <Fingerprint className="h-4.5 w-4.5 text-emerald-400" />
                 Enter Chat Preview Mode (Offline)
-              </button> */}
+              </button>
             </form>
 
             <p className="mt-5 text-[11px] text-slate-500">
@@ -446,7 +446,7 @@ export default function AuthScreen({ onLoginSuccess, savedUserForPin, onPinUnloc
                 onClick={() => setIsSignUp(!isSignUp)}
                 className="font-bold text-emerald-400 hover:underline cursor-pointer"
               >
-                {isSignUp ? 'Login here' : 'Register here'}
+                {isSignUp ? 'Access Portal' : 'Register Secure Profile'}
               </button>
             </p>
           </motion.div>
@@ -496,7 +496,7 @@ export default function AuthScreen({ onLoginSuccess, savedUserForPin, onPinUnloc
           <div className="flex flex-col">
             <h3 className="text-center text-lg font-bold text-white">Setting up secure account</h3>
             <p className="text-center text-xs text-slate-400 mt-1 mb-6">Generating your secure credentials...</p>
-
+            
             <div className="flex justify-center my-6">
               <div className="relative flex h-16 w-16 items-center justify-center">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500/20 opacity-75"></span>
@@ -526,7 +526,7 @@ export default function AuthScreen({ onLoginSuccess, savedUserForPin, onPinUnloc
               <ShieldAlert className="h-5 w-5" />
               <h3 className="text-base font-bold text-white">Write Down Your Mnemonic Recovery Key</h3>
             </div>
-
+            
             <p className="text-[11px] text-slate-400 mb-4 leading-relaxed">
               This 12-word phrase is your private backup key. Write it down to restore your secure chats if you switch devices. Chatta never stores this on its server!
             </p>
@@ -580,7 +580,7 @@ export default function AuthScreen({ onLoginSuccess, savedUserForPin, onPinUnloc
               <Lock className="h-3.5 w-3.5 animate-pulse" />
               <span>Workspace Secured</span>
             </div>
-
+            
             <h3 className="text-lg font-extrabold text-white">Unlock Chatta Workspace</h3>
             <p className="mt-1 text-xs text-slate-400">
               Provide your 6-digit security PIN to restore your encryption parameters.
