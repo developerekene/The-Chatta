@@ -1,0 +1,6 @@
+{
+  "name": "Chatta",
+  "description": "An end-to-end encrypted chat application like WhatsApp, featuring voice messaging, contact and group management, local backups, and real-time offline synchronization.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
