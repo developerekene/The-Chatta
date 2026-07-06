@@ -602,19 +602,6 @@ export default function AuthScreen({ onLoginSuccess, savedUserForPin, onPinUnloc
                 }}
                 className="w-48 mx-auto text-center font-mono tracking-widest text-3xl font-bold rounded-xl border border-slate-800 bg-slate-950 py-2.5 text-emerald-400 focus:border-emerald-500 outline-none"
               />
-              
-              <div className="mt-4 flex justify-center gap-3">
-                {/* Touch/FaceID Biometric trigger for Mobile simulation */}
-                <button
-                  id="biometric-login-btn"
-                  onClick={handleSimulateBiometric}
-                  className="flex items-center gap-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-3.5 py-1.5 text-[10px] font-bold text-emerald-400 hover:bg-emerald-500/20 transition-all cursor-pointer"
-                  title="Simulate Biometric Fingerprint/FaceID Unlock"
-                >
-                  <Fingerprint className="h-4 w-4" />
-                  <span>BIOMETRIC LOCK</span>
-                </button>
-              </div>
             </div>
 
             <div className="mt-4 border-t border-slate-800 pt-4 text-[11px] text-slate-500">
