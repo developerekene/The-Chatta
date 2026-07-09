@@ -749,6 +749,7 @@ export default function App() {
         onLoginSuccess={handleLoginSuccess} 
         savedUserForPin={isAppLocked ? user : null}
         onPinUnlockSuccess={() => setIsAppLocked(false)}
+        onOpenInstallModal={() => setShowInstallModal(true)}
       />
     );
   }

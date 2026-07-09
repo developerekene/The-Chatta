@@ -1,4 +1,4 @@
-const CACHE_NAME = 'chatta-pwa-cache-v1';
+const CACHE_NAME = 'chatta-pwa-cache-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -45,33 +45,51 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Network-first strategy for index/navigation and all HTML/JS assets to guarantee instant updates
+  const isNavigation = event.request.mode === 'navigate' || url.endsWith('/') || url.endsWith('.html');
+  
+  if (isNavigation) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          return caches.match('/');
+        })
+    );
+    return;
+  }
+
+  // Stale-While-Revalidate or Network-First for other assets
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-
-      return fetch(event.request)
-        .then((response) => {
-          // If response is valid, cache it for static assets
-          if (response && response.status === 200 && response.type === 'basic') {
-            // Avoid caching large or non-static files
+      const fetchPromise = fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
             if (!url.includes('/api/') && !url.includes('sockjs') && !url.includes('hmr')) {
-              const responseToCache = response.clone();
+              const responseToCache = networkResponse.clone();
               caches.open(CACHE_NAME).then((cache) => {
                 cache.put(event.request, responseToCache);
               });
             }
           }
-          return response;
+          return networkResponse;
         })
-        .catch(() => {
-          // If offline and request is document navigation, return index page
-          if (event.request.mode === 'navigate') {
-            return caches.match('/');
+        .catch((err) => {
+          if (cachedResponse) {
+            return cachedResponse;
           }
-          return null;
+          throw err;
         });
+
+      return cachedResponse || fetchPromise;
     })
   );
 });

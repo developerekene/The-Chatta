@@ -26,9 +26,10 @@ interface AuthScreenProps {
   onLoginSuccess: (user: User) => void;
   savedUserForPin?: User | null; // For PIN unlock when already registered
   onPinUnlockSuccess?: () => void;
+  onOpenInstallModal?: () => void;
 }
 
-export default function AuthScreen({ onLoginSuccess, savedUserForPin, onPinUnlockSuccess }: AuthScreenProps) {
+export default function AuthScreen({ onLoginSuccess, savedUserForPin, onPinUnlockSuccess, onOpenInstallModal }: AuthScreenProps) {
   const [step, setStep] = useState<'welcome' | 'pin_setup' | 'generating' | 'recovery' | 'pin_unlock'>('welcome');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -437,6 +438,26 @@ export default function AuthScreen({ onLoginSuccess, savedUserForPin, onPinUnloc
                 <Fingerprint className="h-4.5 w-4.5 text-emerald-400" />
                 Enter Chat Preview Mode (Offline)
               </button>
+
+              {onOpenInstallModal && (
+                <>
+                  <div className="relative flex py-1 items-center">
+                    <div className="flex-grow border-t border-slate-800"></div>
+                    <span className="flex-shrink mx-3 text-[9px] font-mono text-slate-500 uppercase tracking-wider">MOBILE CLIENT</span>
+                    <div className="flex-grow border-t border-slate-800"></div>
+                  </div>
+
+                  <button
+                    id="welcome-install-pwa-button"
+                    type="button"
+                    onClick={onOpenInstallModal}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 hover:from-emerald-500/20 hover:to-emerald-500/10 text-emerald-400 py-2.5 text-xs font-bold tracking-wider uppercase transition-all cursor-pointer"
+                  >
+                    <Smartphone className="h-4 w-4 text-emerald-400 animate-pulse" />
+                    <span>Install Chatta App</span>
+                  </button>
+                </>
+              )}
             </form>
 
             <p className="mt-5 text-[11px] text-slate-500">
@@ -603,6 +624,20 @@ export default function AuthScreen({ onLoginSuccess, savedUserForPin, onPinUnloc
                 className="w-48 mx-auto text-center font-mono tracking-widest text-3xl font-bold rounded-xl border border-slate-800 bg-slate-950 py-2.5 text-emerald-400 focus:border-emerald-500 outline-none"
               />
             </div>
+
+            {onOpenInstallModal && (
+              <div className="mb-4 flex justify-center">
+                <button
+                  id="unlock-install-pwa-button"
+                  type="button"
+                  onClick={onOpenInstallModal}
+                  className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 hover:from-emerald-500/20 hover:to-emerald-500/10 text-emerald-400 px-6 py-2.5 text-xs font-bold tracking-wider uppercase transition-all cursor-pointer w-full max-w-[240px]"
+                >
+                  <Smartphone className="h-4 w-4 text-emerald-400 animate-pulse" />
+                  <span>Install Chatta App</span>
+                </button>
+              </div>
+            )}
 
             <div className="mt-4 border-t border-slate-800 pt-4 text-[11px] text-slate-500">
               Need to authenticate with another email?{' '}
