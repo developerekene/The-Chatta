@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   Search, Users, MessageSquarePlus, Settings, Database, Moon, Sun, 
   Wifi, WifiOff, Globe, ShieldCheck, HelpCircle, ArrowRightLeft, UserCheck, UserPlus, X, Loader2,
-  MoreVertical, LogOut, Sparkles
+  MoreVertical, LogOut, Sparkles, Smartphone
 } from 'lucide-react';
 import { Contact, Group, User } from '../types';
 
@@ -22,6 +22,7 @@ interface SidebarProps {
   onAddContactEmail: (email: string) => Promise<{ success: boolean; message: string }>;
   onLogout: () => void;
   onOpenPlanModal: () => void;
+  onOpenInstallModal: () => void;
 }
 
 export default function Sidebar({
@@ -40,6 +41,7 @@ export default function Sidebar({
   onAddContactEmail,
   onLogout,
   onOpenPlanModal,
+  onOpenInstallModal,
 }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'chats' | 'groups'>('chats');
@@ -202,6 +204,19 @@ export default function Sidebar({
                 >
                   <UserPlus className="h-4 w-4 text-slate-400" />
                   <span>Add Contact by Email</span>
+                </button>
+
+                {/* Install Mobile App */}
+                <button
+                  id="menu-install-app-btn"
+                  onClick={() => {
+                    onOpenInstallModal();
+                    setShowMenu(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-emerald-600 dark:text-emerald-400 font-bold hover:bg-slate-50 dark:hover:bg-slate-800/60 text-left transition-colors cursor-pointer border-t border-slate-100 dark:border-slate-800/80"
+                >
+                  <Smartphone className="h-4 w-4 text-emerald-500" />
+                  <span>Install Mobile App</span>
                 </button>
 
                 {/* Toggle Appearance */}

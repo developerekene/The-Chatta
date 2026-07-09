@@ -15,6 +15,7 @@ import GroupManager from './components/GroupManager';
 import EncryptionDemoPanel from './components/EncryptionDemoPanel';
 import PlanModal from './components/PlanModal';
 import CallModal from './components/CallModal';
+import InstallModal from './components/InstallModal';
 
 // Firebase Imports
 import { 
@@ -93,6 +94,7 @@ export default function App() {
   const [showGroupManager, setShowGroupManager] = useState(false);
   const [showCryptoLogs, setShowCryptoLogs] = useState(false);
   const [showPlanModal, setShowPlanModal] = useState(false);
+  const [showInstallModal, setShowInstallModal] = useState(false);
   const [activeCall, setActiveCall] = useState<{ isVideo: boolean; partnerName: string; partnerAvatar: string } | null>(null);
 
   // Inactivity tracking
@@ -812,6 +814,7 @@ export default function App() {
             onAddContactEmail={handleAddContactEmail}
             onLogout={handleLogout}
             onOpenPlanModal={() => setShowPlanModal(true)}
+            onOpenInstallModal={() => setShowInstallModal(true)}
           />
         </div>
  
@@ -912,6 +915,12 @@ export default function App() {
           onClose={() => setActiveCall(null)}
         />
       )}
+
+      {/* 6. PWA Mobile Installer Modal */}
+      <InstallModal
+        isOpen={showInstallModal}
+        onClose={() => setShowInstallModal(false)}
+      />
     </div>
   );
 }

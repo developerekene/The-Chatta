@@ -1,0 +1,18 @@
+{
+  "short_name": "Chatta",
+  "name": "Chatta E2EE Secure Messenger",
+  "description": "An end-to-end encrypted chat application featuring secure voice messaging, group chat, and offline synchronization.",
+  "icons": [
+    {
+      "src": "/icon.jpg",
+      "type": "image/jpeg",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#020617",
+  "theme_color": "#10b981",
+  "display": "standalone",
+  "orientation": "portrait"
+}
