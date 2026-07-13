@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "Chatta",
+    "slug": "chatta-workspace",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./public/icon.jpg",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#090d16"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.chatta.workspace"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#090d16"
+      },
+      "package": "com.chatta.workspace"
+    },
+    "web": {
+      "favicon": "./public/icon.jpg"
+    }
+  }
+}

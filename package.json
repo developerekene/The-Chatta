@@ -3,24 +3,33 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "main": "index.js",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "expo:start": "npx expo start",
+    "android": "npx expo start --android",
+    "ios": "npx expo start --ios"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
     "@tailwindcss/vite": "^4.1.14",
     "@vitejs/plugin-react": "^5.0.4",
     "dotenv": "^17.2.3",
+    "expo": "^57.0.4",
+    "expo-status-bar": "^57.0.0",
     "express": "^4.21.2",
     "firebase": "^12.15.0",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
+    "react-native": "^0.86.0",
+    "react-native-safe-area-context": "^5.8.0",
+    "react-native-webview": "^14.0.1",
     "vite": "^6.2.3"
   },
   "devDependencies": {
